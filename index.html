@@ -145,6 +145,27 @@
   .verdict p{font-size:13.5px; opacity:.95}
   .verdict .em{display:inline-block; margin-top:10px; font-weight:700; font-size:14px}
 
+  /* altitude care card */
+  .alt{background:var(--paper); border:1px solid var(--hair); border-top:4px solid var(--terra);
+    border-radius:20px; box-shadow:var(--shadow); padding:20px; margin:18px 0}
+  .alt h3{font-size:18px; margin-bottom:4px}
+  .alt .sub{font-size:12.5px; color:var(--sub); margin-bottom:14px}
+  .alt .good{font-size:13px; background:rgba(47,143,131,.08); border-left:3px solid var(--teal);
+    padding:9px 12px; border-radius:0 9px 9px 0; margin-bottom:16px; color:var(--teal-d)}
+  .alt .grp{margin-bottom:14px}
+  .alt .grp:last-child{margin-bottom:0}
+  .alt .grp .gt{font-size:13.5px; font-weight:700; color:var(--terra); margin-bottom:6px; display:flex; align-items:center; gap:7px}
+  .alt .grp ul{list-style:none; display:grid; gap:6px}
+  .alt .grp li{font-size:13px; color:var(--sub); padding-left:18px; position:relative; line-height:1.6}
+  .alt .grp li::before{content:"·"; position:absolute; left:4px; color:var(--terra); font-weight:700}
+  .alt .grp li b{color:var(--ink); font-weight:600}
+  .alt .danger{background:rgba(201,76,42,.08); border:1px solid rgba(201,76,42,.25); border-radius:12px; padding:12px 14px; margin-top:4px}
+  .alt .danger .gt{color:#c0392b}
+  .alt .danger li::before{color:#c0392b}
+  .alt .warmnote{margin-top:16px; font-size:13px; background:linear-gradient(135deg,rgba(201,118,75,.1),rgba(183,144,47,.08));
+    border-radius:12px; padding:13px 15px; color:#8a5a2b; line-height:1.7}
+  .alt .disc{margin-top:12px; font-size:11px; color:var(--sub); font-style:italic}
+
   footer{text-align:center; color:var(--sub); font-size:11.5px; margin-top:26px; line-height:1.9}
   .leaflet-popup-content{font-size:13px}
   .leaflet-popup-content a{color:var(--teal-d); font-weight:700; text-decoration:none}
@@ -176,6 +197,7 @@
     <a href="#d4">Day4 · 环湖</a>
     <a href="#d5">Day5 · 女神山</a>
     <a href="#d6">Day6 · 回北京</a>
+    <a href="#altitude">🏔 高反提示</a>
     <a href="#budget">💰 预算</a>
     <a href="#check">✓ Checklist</a>
   </nav>
@@ -332,6 +354,55 @@
     </div>
   </section>
 
+  <!-- ============ ALTITUDE CARE ============ -->
+  <div class="lead" id="altitude"><span class="ln"></span><span class="t">高原反应温馨提示</span><span class="ln"></span></div>
+  <div class="alt">
+    <h3 class="serif">🏔 给 Xinyi 的高反小贴士</h3>
+    <div class="sub">海拔曲线：昆明 1890m → 丽江 2400m → 泸沽湖 2690m → 女神山索道顶 ~3770m</div>
+    <div class="good">✅ 先放轻松：这条线本来就<b>很护高反</b>——昆明缓冲一晚、阶梯式慢慢升、节奏松。你已经赢在起跑线，下面只是锦上添花。</div>
+
+    <div class="grp">
+      <div class="gt">🎒 行前准备</div>
+      <ul>
+        <li>出发前<b>别让自己累垮或感冒</b>——带着感冒上高原最容易诱发高反</li>
+        <li>可提前咨询医生：<b>红景天</b>（建议提前 5–7 天开始吃）；高反药 <b>乙酰唑胺(Diamox)</b> 需医生处方</li>
+        <li>常备 <b>布洛芬 / 对乙酰氨基酚</b> 对付头痛，以及晕车药</li>
+        <li>在丽江药店/酒店可买 <b>便携氧气罐</b>，带 1–2 罐上女神山以防万一</li>
+      </ul>
+    </div>
+
+    <div class="grp">
+      <div class="gt">🌙 到达头两天（最关键）</div>
+      <ul>
+        <li>抵丽江/泸沽湖<b>第一晚</b>：不洗太热的澡、不剧烈运动、<b>不喝酒、不熬夜、不吃太饱</b></li>
+        <li><b>小口多次喝水</b>，别猛灌；放慢所有动作，走路说话都慢半拍</li>
+        <li>注意保暖，早晚温差大，别着凉</li>
+        <li>睡不好是正常高反表现，别焦虑——躺着休息也是恢复</li>
+      </ul>
+    </div>
+
+    <div class="grp">
+      <div class="gt">🚠 Day5 女神山（全程最高点）</div>
+      <ul>
+        <li>索道快速升到 ~3770m，上去后<b>慢走、别跑跳</b>，多停多看景少爬</li>
+        <li>带上氧气罐和水；觉得不舒服<b>立刻坐下休息或下撤</b>，景区有备选（湖边咖啡发呆）</li>
+        <li>头痛/胸闷/想吐就别硬上山顶——<b>湖景哪里都能看</b></li>
+      </ul>
+    </div>
+
+    <div class="grp danger">
+      <div class="gt">🚨 这些信号要警惕（立即下撤 + 就医）</div>
+      <ul>
+        <li><b>剧烈头痛吃药不缓解、反复呕吐、走路不稳、意识模糊</b></li>
+        <li><b>严重气短、咳粉红色泡沫痰</b>（可能是高原肺水肿，危险）</li>
+        <li>→ 立刻<b>降低海拔</b>（回丽江甚至更低）并就医，别犹豫</li>
+      </ul>
+    </div>
+
+    <div class="warmnote">🐾 最后一句给你：你是 INFP，容易"怕扫大家兴"而硬撑——<b>这趟是慢旅行，状态不好就大声说出来</b>。少看一个点、多睡一会儿、提前下山，都完全 OK。把自己照顾好，才是这趟最重要的事。</div>
+    <div class="disc">※ 以上为一般性提示，非医疗建议；用药及个人风险请出行前咨询医生。</div>
+  </div>
+
   <!-- ============ BUDGET ============ -->
   <div class="lead" id="budget"><span class="ln"></span><span class="t">大致花费</span><span class="ln"></span></div>
   <div class="budget">
@@ -391,6 +462,15 @@
       <li>晕车药（丽江→泸沽湖山路弯多）</li>
       <li>轻便运动鞋（女神山 + 古城石板路）</li>
       <li>高海拔的晚上别喝太多酒、别熬夜</li>
+    </ul></details>
+    <details class="check"><summary>G. 高反准备（Xinyi）</summary><ul>
+      <li>出发前别累垮 / 别带感冒上高原</li>
+      <li>红景天提前 5–7 天开始吃</li>
+      <li>咨询医生是否备乙酰唑胺(Diamox)</li>
+      <li>布洛芬 / 对乙酰氨基酚（头痛）</li>
+      <li>丽江买 1–2 罐便携氧气，带上女神山</li>
+      <li>第一晚不喝酒 / 不熬夜 / 不洗太热的澡</li>
+      <li>记下最近医院位置（丽江有正规医院）</li>
     </ul></details>
   </div>
 
