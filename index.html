@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>云南丽江 · 泸沽湖 5.29–6.3</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#faf7f2; --paper:#ffffff; --ink:#2b2723; --sub:#7d756c; --hair:#ece5db;
+    --teal:#2f8f83; --teal-d:#216b61; --terra:#c9764b; --gold:#b7902f; --sky:#3f7fb0;
+    --shadow:0 8px 30px rgba(60,45,30,.08);
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.7; -webkit-text-size-adjust:100%}
+  .serif{font-family:"Noto Serif SC",serif}
+  .wrap{max-width:720px; margin:0 auto; padding:0 18px 70px}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative; height:62vh; min-height:380px; max-height:560px; overflow:hidden;
+    display:flex; align-items:flex-end; justify-content:center}
+  .hero img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+  .hero::after{content:""; position:absolute; inset:0;
+    background:linear-gradient(to top,rgba(20,15,10,.72) 0%,rgba(20,15,10,.15) 45%,rgba(20,15,10,.25) 100%)}
+  .hero .h-in{position:relative; z-index:2; text-align:center; color:#fff; padding:0 22px 44px}
+  .hero .kick{font-size:12px; letter-spacing:4px; text-transform:uppercase; opacity:.9; margin-bottom:12px}
+  .hero h1{font-size:36px; font-weight:700; letter-spacing:2px; text-shadow:0 2px 16px rgba(0,0,0,.4)}
+  .hero .dates{margin-top:12px; font-size:15px; letter-spacing:1px; opacity:.95}
+  .hero .tagline{margin-top:6px; font-size:13px; opacity:.85}
+  .hero .route{display:flex; flex-wrap:wrap; justify-content:center; gap:5px; margin-top:16px; font-size:12.5px; opacity:.95}
+  .hero .route .arr{opacity:.6}
+
+  /* ---------- DAY NAV ---------- */
+  .daynav{position:sticky; top:0; z-index:900; background:rgba(250,247,242,.94);
+    backdrop-filter:blur(10px); border-bottom:1px solid var(--hair);
+    display:flex; gap:7px; overflow-x:auto; padding:11px 18px; margin:0 -18px 0;
+    max-width:720px; margin-left:auto; margin-right:auto}
+  .daynav::-webkit-scrollbar{display:none}
+  .daynav a{flex:0 0 auto; font-size:12.5px; color:var(--sub); text-decoration:none;
+    border:1px solid var(--hair); background:var(--paper); padding:6px 12px; border-radius:20px; white-space:nowrap; transition:.15s}
+  .daynav a:hover,.daynav a:active{background:var(--teal); color:#fff; border-color:var(--teal)}
+
+  /* ---------- SECTION INTRO ---------- */
+  .lead{margin:26px 0 4px; text-align:center}
+  .lead .ln{display:inline-block; width:34px; height:1px; background:var(--terra); vertical-align:middle; margin:0 10px}
+  .lead span.t{font-size:13px; letter-spacing:3px; color:var(--terra); text-transform:uppercase}
+
+  /* ---------- MAP ---------- */
+  #map{height:330px; border-radius:18px; margin:16px 0 8px; box-shadow:var(--shadow); z-index:1}
+  .maphint{font-size:12px; color:var(--sub); text-align:center; margin-bottom:10px}
+  .maphint b{color:var(--teal-d)}
+
+  /* ---------- DAY CARD ---------- */
+  .day{background:var(--paper); border-radius:20px; overflow:hidden; box-shadow:var(--shadow);
+    margin:18px 0; opacity:0; transform:translateY(18px); transition:.6s cubic-bezier(.2,.7,.2,1)}
+  .day.in{opacity:1; transform:none}
+  .day .photo{position:relative; height:200px; overflow:hidden}
+  .day .photo img{width:100%; height:100%; object-fit:cover}
+  .day .photo .lbl{position:absolute; left:16px; bottom:14px; color:#fff; z-index:2}
+  .day .photo::after{content:""; position:absolute; inset:0;
+    background:linear-gradient(to top,rgba(20,15,10,.66),rgba(20,15,10,0) 60%)}
+  .day .photo .lbl{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap}
+  .day .photo .badge{background:rgba(255,255,255,.92); color:var(--teal-d); font-size:11.5px; font-weight:800;
+    padding:3px 10px; border-radius:20px; letter-spacing:.5px}
+  .day .photo h3{font-size:21px; font-weight:700; text-shadow:0 1px 10px rgba(0,0,0,.5)}
+  .day .photo .date{font-size:12.5px; opacity:.9; text-shadow:0 1px 8px rgba(0,0,0,.5)}
+
+  .body{padding:16px 18px 20px}
+
+  /* chips */
+  .chips{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px}
+  .chip{font-size:12px; color:var(--sub); background:var(--bg); border:1px solid var(--hair);
+    padding:4px 10px; border-radius:8px; display:inline-flex; align-items:center; gap:5px}
+  .chip b{color:var(--ink); font-weight:600}
+
+  /* timeline */
+  .tl{position:relative; padding-left:20px}
+  .tl::before{content:""; position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:var(--hair)}
+  .ev{position:relative; padding:0 0 15px 0}
+  .ev:last-child{padding-bottom:0}
+  .ev::before{content:""; position:absolute; left:-18px; top:6px; width:9px; height:9px; border-radius:50%;
+    background:var(--teal); box-shadow:0 0 0 3px var(--paper)}
+  .ev .tm{font-size:11.5px; font-weight:700; color:var(--terra); letter-spacing:.5px}
+  .ev .tx{font-size:14px; margin-top:1px}
+  .ev .tx b{font-weight:600}
+
+  /* info rows */
+  .info{margin-top:14px; padding-top:13px; border-top:1px dashed var(--hair); display:grid; gap:9px}
+  .ir{display:flex; gap:10px; font-size:13px; color:var(--sub)}
+  .ir .k{flex:0 0 auto; width:62px; color:var(--teal-d); font-weight:600}
+  .ir .v{flex:1}
+  .ir .v b{color:var(--ink); font-weight:600}
+
+  .tip{margin-top:13px; font-size:12.5px; color:#946a1c; background:rgba(183,144,47,.09);
+    border-left:3px solid var(--gold); padding:8px 12px; border-radius:0 9px 9px 0}
+
+  .navbtn{display:inline-flex; align-items:center; gap:6px; margin-top:13px; font-size:13px; color:#fff;
+    background:var(--teal); text-decoration:none; padding:9px 15px; border-radius:11px; font-weight:600}
+
+  /* lake stops */
+  .stops{list-style:none; margin-top:6px}
+  .stops li{display:flex; align-items:center; gap:11px; padding:9px 0; border-top:1px solid var(--hair)}
+  .stops li:first-child{border-top:none}
+  .stops .num{flex:0 0 25px; height:25px; line-height:25px; text-align:center;
+    background:var(--teal); color:#fff; border-radius:50%; font-size:12px; font-weight:700}
+  .stops .nm{flex:1; font-size:13.5px}
+  .stops .nm small{display:block; color:var(--sub); font-size:11.5px; font-weight:400}
+  .stops .go{flex:0 0 auto; font-size:12px; color:var(--teal-d); border:1px solid var(--teal);
+    text-decoration:none; padding:5px 12px; border-radius:16px; font-weight:600}
+
+  /* budget */
+  .budget{background:var(--paper); border-radius:20px; box-shadow:var(--shadow); padding:18px; margin:18px 0}
+  .budget h3{font-size:17px; margin-bottom:4px}
+  .budget .note{font-size:12px; color:var(--sub); margin-bottom:12px}
+  .budget table{width:100%; border-collapse:collapse; font-size:13px}
+  .budget td{padding:8px 0; border-bottom:1px solid var(--hair); color:var(--sub)}
+  .budget td:first-child{color:var(--ink)}
+  .budget td:last-child{text-align:right; font-weight:600; color:var(--teal-d); white-space:nowrap}
+  .budget tr:last-child td{border-bottom:none}
+
+  /* checklist */
+  .checkwrap{background:var(--paper); border-radius:20px; box-shadow:var(--shadow); padding:8px 18px; margin:18px 0}
+  .check{border-bottom:1px solid var(--hair)}
+  .check:last-child{border-bottom:none}
+  .check summary{cursor:pointer; font-size:14px; font-weight:600; color:var(--ink); padding:13px 0; list-style:none; display:flex; justify-content:space-between}
+  .check summary::-webkit-details-marker{display:none}
+  .check summary::after{content:"+"; color:var(--terra); font-weight:700}
+  .check[open] summary::after{content:"–"}
+  .check ul{padding:0 0 14px; list-style:none}
+  .check li{font-size:12.5px; color:var(--sub); padding:6px 0 6px 26px; position:relative; cursor:pointer; user-select:none; transition:.15s}
+  .check li::before{content:"☐"; position:absolute; left:0; top:5px; color:var(--teal); font-size:15px; transition:.15s}
+  .check li:hover{color:var(--ink)}
+  .check li.done{color:#b3aaa0; text-decoration:line-through; text-decoration-color:#cfc6ba}
+  .check li.done::before{content:"☑"; color:var(--terra)}
+  .check .done-bar{font-size:11.5px; color:var(--sub); padding:2px 0 10px}
+  .check .done-bar b{color:var(--teal-d)}
+  .check .reset{float:right; color:var(--terra); cursor:pointer; font-weight:600}
+
+  .verdict{background:linear-gradient(135deg,#2f8f83,#216b61); color:#fff; border-radius:20px; padding:22px; margin:18px 0; box-shadow:var(--shadow)}
+  .verdict h4{font-size:15px; margin-bottom:9px; letter-spacing:1px}
+  .verdict p{font-size:13.5px; opacity:.95}
+  .verdict .em{display:inline-block; margin-top:10px; font-weight:700; font-size:14px}
+
+  footer{text-align:center; color:var(--sub); font-size:11.5px; margin-top:26px; line-height:1.9}
+  .leaflet-popup-content{font-size:13px}
+  .leaflet-popup-content a{color:var(--teal-d); font-weight:700; text-decoration:none}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<div class="hero">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Lugu_Lake_from_Lige_Observation_Deck_%2820230930180236%29.jpg/1920px-Lugu_Lake_from_Lige_Observation_Deck_%2820230930180236%29.jpg" alt="泸沽湖里格观景台">
+  <div class="h-in">
+    <div class="kick">Yunnan · Lijiang · Lugu Lake</div>
+    <h1 class="serif">丽江 · 泸沽湖</h1>
+    <div class="dates">2026.5.29 – 6.3 · 六天五晚</div>
+    <div class="tagline">曼谷 + 北京 → 昆明集合 · 自然风景 + 慢旅行 + 轻户外</div>
+    <div class="route">
+      <span>曼谷</span><span class="arr">✈</span><span>昆明</span><span class="arr">·</span><span>北京</span><span class="arr">✈</span><span>昆明</span>
+      <span class="arr">🤝</span><span>丽江</span><span class="arr">🚗</span><span>泸沽湖</span><span class="arr">🗺</span><span>丽江</span><span class="arr">✈</span><span>北京</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <nav class="daynav">
+    <a href="#d1">Day1 · 昆明集合</a>
+    <a href="#d2">Day2 · 丽江</a>
+    <a href="#d3">Day3 · 去泸沽湖</a>
+    <a href="#d4">Day4 · 环湖</a>
+    <a href="#d5">Day5 · 女神山</a>
+    <a href="#d6">Day6 · 回北京</a>
+    <a href="#budget">💰 预算</a>
+    <a href="#check">✓ Checklist</a>
+  </nav>
+
+  <!-- ============ MAP ============ -->
+  <div class="lead"><span class="ln"></span><span class="t">Day 4 环湖地图</span><span class="ln"></span></div>
+  <div id="map"></div>
+  <div class="maphint">🗺 点地图上任意一个点 → 弹出「<b>高德导航</b>」直接唤起高德 App</div>
+
+  <!-- ============ DAY 1 ============ -->
+  <section class="day" id="d1">
+    <div class="photo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Kunming_Railway_Station_20250811_185613.jpg/1920px-Kunming_Railway_Station_20250811_185613.jpg" alt="昆明">
+      <div class="lbl"><span class="badge">DAY 1</span><div><h3 class="serif">昆明集合</h3><div class="date">5.29 周五</div></div></div>
+    </div>
+    <div class="body">
+      <div class="chips"><span class="chip">☀️ <b>25° / 16°</b></span><span class="chip">⛰ 海拔 <b>1890m</b></span><span class="chip">✈️ 两人各自飞抵</span></div>
+      <div class="tl">
+        <div class="ev"><div class="tm">傍晚</div><div class="tx">Xinyi <b>20:10 曼谷起飞</b> → 23:30 落地昆明长水机场</div></div>
+        <div class="ev"><div class="tm">当天</div><div class="tx">同伴 <b>北京 → 昆明长水机场</b>（按其航班时间确认）</div></div>
+        <div class="ev"><div class="tm">夜</div><div class="tx">机场附近酒店 <b>会合</b>，早点休息，倒时差缓口气</div></div>
+      </div>
+      <div class="info">
+        <div class="ir"><span class="k">📍 集合</span><span class="v">昆明长水机场 / 机场酒店 — 两人会合后 5.30 一起出发去丽江</span></div>
+        <div class="ir"><span class="k">🏨 住宿</span><span class="v">长水机场附近酒店 · 关键词「机场接送 / 安静 / 24h前台」</span></div>
+        <div class="ir"><span class="k">🍜 美食</span><span class="v">落地晚先简单；昆明可留个早餐尝 <b>过桥米线 / 汽锅鸡</b></span></div>
+      </div>
+      <div class="tip">⚠️ 两人到达时间不同：约好谁先到先 check-in 还是机场碰面；深夜落地确认酒店 24h 接机。</div>
+      <a class="navbtn" href="https://uri.amap.com/search?keyword=昆明长水国际机场&src=trip&coordinate=gaode&callnative=1">高德 · 昆明长水机场集合点 ✈️</a>
+    </div>
+  </section>
+
+  <!-- ============ DAY 2 ============ -->
+  <section class="day" id="d2">
+    <div class="photo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/1_lijiang_old_town_night.jpg/1920px-1_lijiang_old_town_night.jpg" alt="丽江古城夜景">
+      <div class="lbl"><span class="badge">DAY 2</span><div><h3 class="serif">昆明 → 丽江</h3><div class="date">5.30 周六</div></div></div>
+    </div>
+    <div class="body">
+      <div class="chips"><span class="chip">⛅ <b>24° / 12°</b></span><span class="chip">⛰ 海拔 <b>2400m</b></span><span class="chip">🚄 高铁 <b>约3.5h</b></span></div>
+      <div class="tl">
+        <div class="ev"><div class="tm">上午</div><div class="tx">睡到自然醒，机场酒店早餐，<b>10:30 以后</b>车次出发，不赶早</div></div>
+        <div class="ev"><div class="tm">午</div><div class="tx">昆明（南）站 🚄 丽江，沿途滇西高原风景</div></div>
+        <div class="ev"><div class="tm">下午</div><div class="tx">抵丽江，入住，<b>休整适应海拔</b>，不安排剧烈活动</div></div>
+        <div class="ev"><div class="tm">傍晚</div><div class="tx">逛大研古城四方街，登 <b>狮子山万古楼看日落</b>，俯瞰古城+玉龙雪山</div></div>
+        <div class="ev"><div class="tm">晚</div><div class="tx">晚餐 <b>腊排骨火锅</b> + 鸡豆凉粉 + 丽江粑粑</div></div>
+      </div>
+      <div class="info">
+        <div class="ir"><span class="k">🏨 住宿</span><span class="v">丽江古城<b>边缘</b>或束河古镇附近（别住古城最里面，石板路拖行李累）</span></div>
+        <div class="ir"><span class="k">📷 机位</span><span class="v">万古楼蓝调时刻俯瞰全城；四方街夜景灯火</span></div>
+      </div>
+      <div class="tip">⛰ 丽江海拔约 2400m，第一晚别喝太多酒、别熬夜，多喝水。</div>
+      <a class="navbtn" href="https://uri.amap.com/search?keyword=昆明南站&src=trip&coordinate=gaode&callnative=1">高德 · 查昆明南站 / 昆明站 🚄</a>
+    </div>
+  </section>
+
+  <!-- ============ DAY 3 ============ -->
+  <section class="day" id="d3">
+    <div class="photo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Northwest_of_Lugu_Lake_%2820230930180157%29.jpg/1920px-Northwest_of_Lugu_Lake_%2820230930180157%29.jpg" alt="泸沽湖">
+      <div class="lbl"><span class="badge">DAY 3</span><div><h3 class="serif">丽江 → 泸沽湖</h3><div class="date">5.31 周日</div></div></div>
+    </div>
+    <div class="body">
+      <div class="chips"><span class="chip">☀️ <b>22° / 10°</b></span><span class="chip">⛰ 海拔 <b>2690m</b></span><span class="chip">🚗 包车 <b>约205km · 4–4.5h</b></span></div>
+      <div class="tl">
+        <div class="ev"><div class="tm">09:00</div><div class="tx">早餐后包车出发（让酒店或且慢入影松安排，优先<b>舒适度</b>）</div></div>
+        <div class="ev"><div class="tm">途中</div><div class="tx"><b>山路十八弯</b>盘山公路，中途观景台停车看金沙江，拍照</div></div>
+        <div class="ev"><div class="tm">午</div><div class="tx">宁蒗 / 小凉山一带简餐</div></div>
+        <div class="ev"><div class="tm">~14:00</div><div class="tx">抵泸沽湖，入住 <b>且慢入影松</b>，湖景房放松</div></div>
+        <div class="ev"><div class="tm">傍晚</div><div class="tx">大落水 / 女神湾 <b>看日落</b>，湖边发呆</div></div>
+        <div class="ev"><div class="tm">晚</div><div class="tx">晚餐 <b>摩梭烤鱼 + 猪膘肉</b>，苏里玛酒浅尝（低度米酒）</div></div>
+      </div>
+      <div class="info">
+        <div class="ir"><span class="k">🏨 住宿</span><span class="v">且慢入影松（连住 5.31 + 6.1 两晚）</span></div>
+        <div class="ir"><span class="k">📷 机位</span><span class="v">盘山路金沙江大拐弯；女神湾日落金光</span></div>
+      </div>
+      <div class="tip">🚗 山路弯多，备晕车药；和司机谈好车型/人数/价格/停靠点/是否含高速费停车费。</div>
+      <a class="navbtn" href="https://uri.amap.com/navigation?to=100.788,27.682,泸沽湖且慢入影松&mode=car&policy=1&src=trip&coordinate=gaode&callnative=1">高德导航 · 丽江 → 泸沽湖（且慢入影松）🚗</a>
+    </div>
+  </section>
+
+  <!-- ============ DAY 4 ============ -->
+  <section class="day" id="d4">
+    <div class="photo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/20260226_Lugu_Lake_Lige_Peninsula.jpg/1920px-20260226_Lugu_Lake_Lige_Peninsula.jpg" alt="里格半岛">
+      <div class="lbl"><span class="badge">DAY 4</span><div><h3 class="serif">泸沽湖环湖日</h3><div class="date">6.1 周一</div></div></div>
+    </div>
+    <div class="body">
+      <div class="chips"><span class="chip">☀️ <b>22° / 10°</b></span><span class="chip">🗺 环湖 <b>约50km</b></span><span class="chip">🐷 猪槽船 <b>¥65/人</b></span><span class="chip">🎟 门票 <b>¥70/人</b></span></div>
+      <div class="tl">
+        <div class="ev"><div class="tm">上午</div><div class="tx">包车环湖（不赶）：大落水 → <b>里格观景台</b>（必拍全景）→ 里格半岛，可坐<b>猪槽船</b>游湖（里务比岛往返）</div></div>
+        <div class="ev"><div class="tm">午</div><div class="tx">里格 / 尼赛湖景餐厅午餐</div></div>
+        <div class="ev"><div class="tm">下午</div><div class="tx">尼赛村 → 情人滩 → 小落水（川滇界）→ 草海 → <b>走婚桥</b></div></div>
+        <div class="ev"><div class="tm">傍晚</div><div class="tx">草海日落 / 返回酒店，湖边烧烤</div></div>
+      </div>
+      <p style="font-size:12.5px;color:var(--sub);margin:14px 0 2px">下方每个点都可单独唤起高德导航 👇</p>
+      <ul class="stops">
+        <li><span class="num">1</span><span class="nm">且慢入影松 / 普洛村<small>出发点</small></span><a class="go" href="https://uri.amap.com/navigation?to=100.788,27.682,泸沽湖且慢入影松&mode=car&src=trip&coordinate=gaode&callnative=1">导航</a></li>
+        <li><span class="num">2</span><span class="nm">大落水村<small>码头 · 猪槽船</small></span><a class="go" href="https://uri.amap.com/navigation?to=100.787,27.705,泸沽湖大落水村&mode=car&src=trip&coordinate=gaode&callnative=1">导航</a></li>
+        <li><span class="num">3</span><span class="nm">里格观景台<small>📷 全景必拍</small></span><a class="go" href="https://uri.amap.com/navigation?to=100.787,27.726,泸沽湖里格观景台&mode=car&src=trip&coordinate=gaode&callnative=1">导航</a></li>
+        <li><span class="num">4</span><span class="nm">里格半岛<small>湖中半岛</small></span><a class="go" href="https://uri.amap.com/navigation?to=100.789,27.730,泸沽湖里格半岛&mode=car&src=trip&coordinate=gaode&callnative=1">导航</a></li>
+        <li><span class="num">5</span><span class="nm">尼赛村</span><a class="go" href="https://uri.amap.com/navigation?to=100.802,27.738,泸沽湖尼赛村&mode=car&src=trip&coordinate=gaode&callnative=1">导航</a></li>
+        <li><span class="num">6</span><span class="nm">情人滩<small>📷 芦苇湖湾</small></span><a class="go" href="https://uri.amap.com/navigation?to=100.808,27.735,泸沽湖情人滩&mode=car&src=trip&coordinate=gaode&callnative=1">导航</a></li>
+        <li><span class="num">7</span><span class="nm">小落水村<small>川滇界碑</small></span><a class="go" href="https://uri.amap.com/navigation?to=100.820,27.748,泸沽湖小落水村&mode=car&src=trip&coordinate=gaode&callnative=1">导航</a></li>
+        <li><span class="num">8</span><span class="nm">草海<small>📷 日落芦苇荡</small></span><a class="go" href="https://uri.amap.com/navigation?to=100.802,27.638,泸沽湖草海&mode=car&src=trip&coordinate=gaode&callnative=1">导航</a></li>
+        <li><span class="num">9</span><span class="nm">走婚桥<small>摩梭文化地标</small></span><a class="go" href="https://uri.amap.com/navigation?to=100.806,27.628,泸沽湖走婚桥&mode=car&src=trip&coordinate=gaode&callnative=1">导航</a></li>
+      </ul>
+      <div class="tip">🐷 确认包车含哪些停靠点和猪槽船；别把行程做太满，留出湖边发呆的时间。</div>
+    </div>
+  </section>
+
+  <!-- ============ DAY 5 ============ -->
+  <section class="day" id="d5">
+    <div class="photo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Lugu_Lake_view_from_cable_car%2C_August_2018_%282%29.jpg/1920px-Lugu_Lake_view_from_cable_car%2C_August_2018_%282%29.jpg" alt="女神山索道看泸沽湖">
+      <div class="lbl"><span class="badge">DAY 5</span><div><h3 class="serif">格姆女神山 → 回丽江</h3><div class="date">6.2 周二</div></div></div>
+    </div>
+    <div class="body">
+      <div class="chips"><span class="chip">🌬 山顶 <b>偏凉 ~10°</b></span><span class="chip">🚠 索道 <b>¥110</b></span><span class="chip">🚗 返丽江 <b>约4.5h</b></span></div>
+      <div class="tl">
+        <div class="ev"><div class="tm">上午</div><div class="tx">早餐后 <b>格姆女神山索道 + 轻徒步</b>，山顶俯瞰整片泸沽湖，重点看景不强爬</div></div>
+        <div class="ev"><div class="tm">中午</div><div class="tx">下山午餐，收拾行李</div></div>
+        <div class="ev"><div class="tm">~13:00</div><div class="tx">包车 <b>返回丽江</b>（把最累的山路提前消化）</div></div>
+        <div class="ev"><div class="tm">傍晚</div><div class="tx">抵丽江，入住束河 / 古城边缘<b>安静精品酒店</b>（恢复夜）</div></div>
+        <div class="ev"><div class="tm">晚</div><div class="tx">束河小酒馆轻松晚餐，早点休息</div></div>
+      </div>
+      <div class="info">
+        <div class="ir"><span class="k">📷 机位</span><span class="v">索道顶俯瞰泸沽湖全景，海拔约3770m，<b>注意保暖防晒</b></span></div>
+        <div class="ir"><span class="k">🌫 备选</span><span class="v">索道因大雾/雨关闭 → 改湖边咖啡发呆 + 提前回丽江</span></div>
+      </div>
+      <div class="tip">🚠 索道开放时间和票价当天先确认；女神山后能否直接接上回丽江的车，提前和司机说好。</div>
+      <a class="navbtn" href="https://uri.amap.com/navigation?to=100.802,27.742,格姆女神山索道&mode=car&policy=1&src=trip&coordinate=gaode&callnative=1">高德导航 · 格姆女神山索道 🚠</a>
+    </div>
+  </section>
+
+  <!-- ============ DAY 6 ============ -->
+  <section class="day" id="d6">
+    <div class="photo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Lijiang_Yunnan_Old-town-01.jpg/1920px-Lijiang_Yunnan_Old-town-01.jpg" alt="丽江古城">
+      <div class="lbl"><span class="badge">DAY 6</span><div><h3 class="serif">丽江 → 北京</h3><div class="date">6.3 周三</div></div></div>
+    </div>
+    <div class="body">
+      <div class="chips"><span class="chip">⛅ <b>24° / 12°</b></span><span class="chip">✈️ 丽江三义机场 <b>LJG</b></span></div>
+      <div class="tl">
+        <div class="ev"><div class="tm">上午</div><div class="tx">束河慢早餐，古镇散步，买点伴手礼（<b>鲜花饼 / 牦牛肉 / 普洱</b>）</div></div>
+        <div class="ev"><div class="tm">中午</div><div class="tx">退房，行李寄存，从容前往机场</div></div>
+        <div class="ev"><div class="tm">下午/晚</div><div class="tx">丽江 <b>直飞北京</b>（优先下午/晚上航班，收尾不赶）</div></div>
+      </div>
+      <div class="info">
+        <div class="ir"><span class="k">✈️ 确认</span><span class="v">到达机场是首都 <b>PEK</b> 还是大兴 <b>PKX</b></span></div>
+        <div class="ir"><span class="k">🔜 之后</span><span class="v">同伴回北京；Xinyi 在北京休整，下个周末再回曼谷</span></div>
+      </div>
+      <a class="navbtn" href="https://uri.amap.com/search?keyword=丽江三义国际机场&src=trip&coordinate=gaode&callnative=1">高德 · 丽江三义机场 LJG ✈️</a>
+    </div>
+  </section>
+
+  <!-- ============ BUDGET ============ -->
+  <div class="lead" id="budget"><span class="ln"></span><span class="t">大致花费</span><span class="ln"></span></div>
+  <div class="budget">
+    <h3 class="serif">💰 主要门票 / 交通预算</h3>
+    <div class="note">每人参考价，不含大交通（机票/高铁）与住宿；最终以现场为准。</div>
+    <table>
+      <tr><td>泸沽湖景区门票</td><td>¥70 / 人</td></tr>
+      <tr><td>格姆女神山索道</td><td>¥110 / 人</td></tr>
+      <tr><td>猪槽船（里务比岛往返）</td><td>¥65 / 人</td></tr>
+      <tr><td>丽江 ↔ 泸沽湖 包车（来回）</td><td>约 ¥599–799 / 天 / 车</td></tr>
+      <tr><td>泸沽湖环湖包车</td><td>约 ¥400–600 / 天 / 车</td></tr>
+      <tr><td>餐饮</td><td>约 ¥100–150 / 天 / 人</td></tr>
+    </table>
+  </div>
+
+  <!-- ============ CHECKLIST ============ -->
+  <div class="lead" id="check"><span class="ln"></span><span class="t">待确认 Checklist</span><span class="ln"></span></div>
+  <div class="checkwrap">
+    <details class="check"><summary>A. 机票</summary><ul>
+      <li>曼谷→昆明 5.29：起降机场 / 航司 / 含托运 / 可退改</li>
+      <li>北京→昆明 5.29：同伴航班时间，尽量不晚 Xinyi 太多</li>
+      <li>昆明深夜落地：酒店是否 24h 接机、是否提前联系司机</li>
+      <li>丽江→北京 6.3：是否直飞、时间优先下午晚上</li>
+      <li>到达机场是 PEK 还是 PKX</li>
+      <li>北京→曼谷下周末回程：机票 / 托运 / 泰国入境证件</li>
+    </ul></details>
+    <details class="check"><summary>B. 高铁</summary><ul>
+      <li>昆明→丽江：出发站是昆明站还是昆明南站</li>
+      <li>机场酒店到高铁站车程，预留 1h+ 机动</li>
+      <li>买 10:30 以后车次</li>
+      <li>购票证件与护照/身份证一致；能否刷证进站 or 需取票</li>
+    </ul></details>
+    <details class="check"><summary>C. 丽江 ↔ 泸沽湖交通</summary><ul>
+      <li>5.31 丽江→泸沽湖的车（且慢入影松或酒店确认）</li>
+      <li>包车还是拼车；车型 / 人数 / 价格 / 出发时间</li>
+      <li>是否酒店门口接、是否送到且慢入影松门口</li>
+      <li>6.2 女神山后能否直接接上回丽江</li>
+      <li>费用是否含高速费 / 停车费 / 司机餐补</li>
+    </ul></details>
+    <details class="check"><summary>D. 泸沽湖游玩</summary><ul>
+      <li>6.1 环湖包车：价格 / 时长 / 停靠点</li>
+      <li>是否含猪槽船 / 里格观景台 / 情人滩 / 草海 / 走婚桥</li>
+      <li>6.2 女神山：索道开放时间 / 票价 / 是否提前买票</li>
+      <li>女神山当天天气，雨/雾及时改轻松方案</li>
+      <li>酒店能否安排早餐 / 行李寄存 / 出发接送</li>
+    </ul></details>
+    <details class="check"><summary>E. 住宿</summary><ul>
+      <li>5.29 昆明机场酒店：接机 / 24h前台 / 取消政策</li>
+      <li>5.30 丽江：别选古城最里面，车能否到门口附近</li>
+      <li>5.31–6.2 且慢入影松：湖景房型 / 含早 / 帮忙安排交通</li>
+      <li>6.2 丽江：安静舒服精品酒店（恢复夜）</li>
+      <li>所有酒店确认入住人姓名 / 证件 / 入住时间 / 取消政策</li>
+    </ul></details>
+    <details class="check"><summary>F. 行李与健康</summary><ul>
+      <li>防晒 / 墨镜 / 润唇膏 / 保湿</li>
+      <li>薄外套/冲锋衣（泸沽湖丽江早晚温差大）</li>
+      <li>晕车药（丽江→泸沽湖山路弯多）</li>
+      <li>轻便运动鞋（女神山 + 古城石板路）</li>
+      <li>高海拔的晚上别喝太多酒、别熬夜</li>
+    </ul></details>
+  </div>
+
+  <!-- ============ VERDICT ============ -->
+  <div class="verdict">
+    <h4 class="serif">整体判断</h4>
+    <p>去程用昆明做缓冲，避免深夜到达后继续赶；5.31–6.2 泸沽湖有完整两晚，能看湖、环湖、上女神山；6.2 提前回丽江，把最累的山路提前消化掉；6.3 从丽江飞北京收尾不赶。</p>
+    <span class="em">不自驾 · 不特种兵 · 慢慢玩 🐾</span>
+  </div>
+
+  <footer>
+    高德链接会唤起手机上的高德 App 导航（请先装高德地图）· 坐标为参考位置，以 App 内实际搜索/路况为准。<br>
+    门票/包车价格为网络参考价，以现场公告为准 · 图片来自 Wikimedia Commons。<br>
+    🐾 祝玩得开心 · 5.29 昆明见
+  </footer>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  var stops = [
+    [27.682,100.788,"① 且慢入影松/普洛村","https://uri.amap.com/navigation?to=100.788,27.682,泸沽湖且慢入影松&mode=car&src=trip&coordinate=gaode&callnative=1"],
+    [27.705,100.787,"② 大落水村","https://uri.amap.com/navigation?to=100.787,27.705,泸沽湖大落水村&mode=car&src=trip&coordinate=gaode&callnative=1"],
+    [27.726,100.787,"③ 里格观景台","https://uri.amap.com/navigation?to=100.787,27.726,泸沽湖里格观景台&mode=car&src=trip&coordinate=gaode&callnative=1"],
+    [27.730,100.789,"④ 里格半岛","https://uri.amap.com/navigation?to=100.789,27.730,泸沽湖里格半岛&mode=car&src=trip&coordinate=gaode&callnative=1"],
+    [27.738,100.802,"⑤ 尼赛村","https://uri.amap.com/navigation?to=100.802,27.738,泸沽湖尼赛村&mode=car&src=trip&coordinate=gaode&callnative=1"],
+    [27.735,100.808,"⑥ 情人滩","https://uri.amap.com/navigation?to=100.808,27.735,泸沽湖情人滩&mode=car&src=trip&coordinate=gaode&callnative=1"],
+    [27.748,100.820,"⑦ 小落水村","https://uri.amap.com/navigation?to=100.820,27.748,泸沽湖小落水村&mode=car&src=trip&coordinate=gaode&callnative=1"],
+    [27.638,100.802,"⑧ 草海","https://uri.amap.com/navigation?to=100.802,27.638,泸沽湖草海&mode=car&src=trip&coordinate=gaode&callnative=1"],
+    [27.628,100.806,"⑨ 走婚桥","https://uri.amap.com/navigation?to=100.806,27.628,泸沽湖走婚桥&mode=car&src=trip&coordinate=gaode&callnative=1"]
+  ];
+  var map = L.map('map',{scrollWheelZoom:false}).setView([27.69,100.80], 12);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+    maxZoom:18, attribution:'© OpenStreetMap © CARTO'
+  }).addTo(map);
+  var latlngs=[];
+  stops.forEach(function(s,i){
+    latlngs.push([s[0],s[1]]);
+    var icon=L.divIcon({className:'',html:'<div style="background:#2f8f83;color:#fff;width:24px;height:24px;border-radius:50% 50% 50% 0;'+
+      'transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(0,0,0,.4);border:2px solid #fff;">'+
+      '<span style="transform:rotate(45deg);font-size:11px;font-weight:700">'+(i+1)+'</span></div>',
+      iconSize:[24,24],iconAnchor:[12,24],popupAnchor:[0,-22]});
+    L.marker([s[0],s[1]],{icon:icon}).addTo(map).bindPopup('<b>'+s[2]+'</b><br><a href="'+s[3]+'">→ 高德导航到这里</a>');
+  });
+  L.polyline(latlngs,{color:'#c9764b',weight:3,opacity:.85,dashArray:'6 6'}).addTo(map);
+  map.fitBounds(L.latLngBounds(latlngs).pad(0.15));
+
+  // scroll reveal
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)e.target.classList.add('in')})},{threshold:.12});
+  document.querySelectorAll('.day').forEach(function(d){io.observe(d)});
+
+  // ---- interactive, persistent checklist ----
+  var STORE='ljlgh-checklist-v1';
+  var saved=JSON.parse(localStorage.getItem(STORE)||'{}');
+  document.querySelectorAll('.check').forEach(function(sec){
+    var sum=sec.querySelector('summary');
+    var secKey=(sum?sum.textContent:'').replace(/\s+/g,'').slice(0,4);
+    var lis=sec.querySelectorAll('li');
+    // progress bar + reset
+    var bar=document.createElement('div'); bar.className='done-bar';
+    sec.querySelector('ul').insertAdjacentElement('beforebegin',bar);
+    function refresh(){
+      var done=0; lis.forEach(function(li){ if(li.classList.contains('done')) done++; });
+      bar.innerHTML='已完成 <b>'+done+'/'+lis.length+'</b>'+(done?' <span class="reset">清空</span>':'');
+      var r=bar.querySelector('.reset');
+      if(r) r.addEventListener('click',function(e){e.stopPropagation(); lis.forEach(function(li){li.classList.remove('done'); delete saved[li.dataset.k];}); localStorage.setItem(STORE,JSON.stringify(saved)); refresh();});
+    }
+    lis.forEach(function(li,i){
+      var k=secKey+'-'+i; li.dataset.k=k;
+      if(saved[k]) li.classList.add('done');
+      li.addEventListener('click',function(){
+        li.classList.toggle('done');
+        if(li.classList.contains('done')) saved[k]=1; else delete saved[k];
+        localStorage.setItem(STORE,JSON.stringify(saved)); refresh();
+      });
+    });
+    refresh();
+  });
+</script>
+</body>
+</html>
