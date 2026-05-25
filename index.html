@@ -53,6 +53,9 @@
   #map{height:330px; border-radius:18px; margin:16px 0 8px; box-shadow:var(--shadow); z-index:1}
   .maphint{font-size:12px; color:var(--sub); text-align:center; margin-bottom:10px}
   .maphint b{color:var(--teal-d)}
+  #map4{height:280px; border-radius:14px; margin:4px 0 8px; z-index:1}
+  .map4hint{font-size:11.5px; color:var(--sub); margin-bottom:12px}
+  .map4hint b{color:var(--teal-d)}
 
   /* ---------- DAY CARD ---------- */
   .day{background:var(--paper); border-radius:20px; overflow:hidden; box-shadow:var(--shadow);
@@ -202,10 +205,10 @@
     <a href="#check">✓ Checklist</a>
   </nav>
 
-  <!-- ============ MAP ============ -->
-  <div class="lead"><span class="ln"></span><span class="t">Day 4 环湖地图</span><span class="ln"></span></div>
+  <!-- ============ OVERVIEW MAP ============ -->
+  <div class="lead"><span class="ln"></span><span class="t">全程路线总览</span><span class="ln"></span></div>
   <div id="map"></div>
-  <div class="maphint">🗺 点地图上任意一个点 → 弹出「<b>高德导航</b>」直接唤起高德 App</div>
+  <div class="maphint">🗺 滇西路线：昆明 → 丽江 → 泸沽湖（点站点可唤起<b>高德</b>）· 环湖细图见 Day 4</div>
 
   <!-- ============ DAY 1 ============ -->
   <section class="day" id="d1">
@@ -293,7 +296,9 @@
         <div class="ev"><div class="tm">下午</div><div class="tx">尼赛村 → 情人滩 → 小落水（川滇界）→ 草海 → <b>走婚桥</b></div></div>
         <div class="ev"><div class="tm">傍晚</div><div class="tx">草海日落 / 返回酒店，湖边烧烤</div></div>
       </div>
-      <p style="font-size:12.5px;color:var(--sub);margin:14px 0 2px">下方每个点都可单独唤起高德导航 👇</p>
+      <div id="map4"></div>
+      <div class="map4hint">🗺 环湖路线（顺时针 9 站）· 点地图上的点 → 弹出「<b>高德导航</b>」</div>
+      <p style="font-size:12.5px;color:var(--sub);margin:14px 0 2px">下方每个点也可单独唤起高德导航 👇</p>
       <ul class="stops">
         <li><span class="num">1</span><span class="nm">且慢入影松 / 普洛村<small>出发点</small></span><a class="go" href="https://uri.amap.com/navigation?to=100.788,27.682,泸沽湖且慢入影松&mode=car&src=trip&coordinate=gaode&callnative=1">导航</a></li>
         <li><span class="num">2</span><span class="nm">大落水村<small>码头 · 猪槽船</small></span><a class="go" href="https://uri.amap.com/navigation?to=100.787,27.705,泸沽湖大落水村&mode=car&src=trip&coordinate=gaode&callnative=1">导航</a></li>
@@ -501,10 +506,31 @@
     [27.638,100.802,"⑧ 草海","https://uri.amap.com/navigation?to=100.802,27.638,泸沽湖草海&mode=car&src=trip&coordinate=gaode&callnative=1"],
     [27.628,100.806,"⑨ 走婚桥","https://uri.amap.com/navigation?to=100.806,27.628,泸沽湖走婚桥&mode=car&src=trip&coordinate=gaode&callnative=1"]
   ];
-  var map = L.map('map',{scrollWheelZoom:false}).setView([27.69,100.80], 12);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
-    maxZoom:18, attribution:'© OpenStreetMap © CARTO'
-  }).addTo(map);
+  var TILE='https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+  var ATTR='© OpenStreetMap © CARTO';
+
+  // ---- OVERVIEW map: 昆明 → 丽江 → 泸沽湖 ----
+  var route=[
+    [25.102,102.929,"昆明长水机场","https://uri.amap.com/search?keyword=昆明长水国际机场&src=trip&coordinate=gaode&callnative=1","Day1 集合"],
+    [26.872,100.235,"丽江古城","https://uri.amap.com/search?keyword=丽江古城&src=trip&coordinate=gaode&callnative=1","Day2 · Day5–6"],
+    [27.682,100.788,"泸沽湖","https://uri.amap.com/navigation?to=100.788,27.682,泸沽湖且慢入影松&mode=car&src=trip&coordinate=gaode&callnative=1","Day3–5 · 环湖"]
+  ];
+  var ov=L.map('map',{scrollWheelZoom:false}).setView([26.7,101.2],7);
+  L.tileLayer(TILE,{maxZoom:18,attribution:ATTR}).addTo(ov);
+  var ovpts=[];
+  route.forEach(function(s,i){
+    ovpts.push([s[0],s[1]]);
+    var ic=L.divIcon({className:'',html:'<div style="background:#c9764b;color:#fff;min-width:24px;height:24px;padding:0 6px;border-radius:14px;'+
+      'display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(0,0,0,.4);border:2px solid #fff;font-size:12px;font-weight:700;white-space:nowrap;">'+(i+1)+' '+s[2]+'</div>',
+      iconSize:[0,0],iconAnchor:[12,12]});
+    L.marker([s[0],s[1]],{icon:ic}).addTo(ov).bindPopup('<b>'+s[2]+'</b><br>'+s[4]+'<br><a href="'+s[3]+'">→ 在高德打开</a>');
+  });
+  L.polyline(ovpts,{color:'#2f8f83',weight:3,opacity:.85,dashArray:'7 7'}).addTo(ov);
+  ov.fitBounds(L.latLngBounds(ovpts).pad(0.3));
+
+  // ---- DAY4 map: lake loop ----
+  var lake=L.map('map4',{scrollWheelZoom:false}).setView([27.69,100.80],12);
+  L.tileLayer(TILE,{maxZoom:18,attribution:ATTR}).addTo(lake);
   var latlngs=[];
   stops.forEach(function(s,i){
     latlngs.push([s[0],s[1]]);
@@ -512,13 +538,16 @@
       'transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(0,0,0,.4);border:2px solid #fff;">'+
       '<span style="transform:rotate(45deg);font-size:11px;font-weight:700">'+(i+1)+'</span></div>',
       iconSize:[24,24],iconAnchor:[12,24],popupAnchor:[0,-22]});
-    L.marker([s[0],s[1]],{icon:icon}).addTo(map).bindPopup('<b>'+s[2]+'</b><br><a href="'+s[3]+'">→ 高德导航到这里</a>');
+    L.marker([s[0],s[1]],{icon:icon}).addTo(lake).bindPopup('<b>'+s[2]+'</b><br><a href="'+s[3]+'">→ 高德导航到这里</a>');
   });
-  L.polyline(latlngs,{color:'#c9764b',weight:3,opacity:.85,dashArray:'6 6'}).addTo(map);
-  map.fitBounds(L.latLngBounds(latlngs).pad(0.15));
+  L.polyline(latlngs,{color:'#c9764b',weight:3,opacity:.85,dashArray:'6 6'}).addTo(lake);
+  lake.fitBounds(L.latLngBounds(latlngs).pad(0.15));
 
-  // scroll reveal
-  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)e.target.classList.add('in')})},{threshold:.12});
+  // scroll reveal (+ fix map4 size when Day4 first reveals inside transformed card)
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){
+    e.target.classList.add('in');
+    if(e.target.querySelector('#map4')) setTimeout(function(){lake.invalidateSize()},350);
+  }})},{threshold:.12});
   document.querySelectorAll('.day').forEach(function(d){io.observe(d)});
 
   // ---- interactive, persistent checklist ----
