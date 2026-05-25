@@ -172,6 +172,9 @@
   footer{text-align:center; color:var(--sub); font-size:11.5px; margin-top:26px; line-height:1.9}
   .leaflet-popup-content{font-size:13px}
   .leaflet-popup-content a{color:var(--teal-d); font-weight:700; text-decoration:none}
+  .leaflet-tooltip.ovlabel{background:#fff; color:var(--ink); border:1px solid var(--hair);
+    font-size:12.5px; font-weight:700; padding:3px 9px; border-radius:9px; box-shadow:0 2px 6px rgba(0,0,0,.18); white-space:nowrap}
+  .leaflet-tooltip.ovlabel::before{display:none !important}
 </style>
 </head>
 <body>
@@ -517,13 +520,15 @@
   ];
   var ov=L.map('map',{scrollWheelZoom:false}).setView([26.7,101.2],7);
   L.tileLayer(TILE,{maxZoom:18,attribution:ATTR}).addTo(ov);
-  var ovpts=[];
+  var ovpts=[], ovdir=['right','left','right'];
   route.forEach(function(s,i){
     ovpts.push([s[0],s[1]]);
-    var ic=L.divIcon({className:'',html:'<div style="background:#c9764b;color:#fff;min-width:24px;height:24px;padding:0 6px;border-radius:14px;'+
-      'display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(0,0,0,.4);border:2px solid #fff;font-size:12px;font-weight:700;white-space:nowrap;">'+(i+1)+' '+s[2]+'</div>',
-      iconSize:[0,0],iconAnchor:[12,12]});
-    L.marker([s[0],s[1]],{icon:ic}).addTo(ov).bindPopup('<b>'+s[2]+'</b><br>'+s[4]+'<br><a href="'+s[3]+'">→ 在高德打开</a>');
+    var ic=L.divIcon({className:'',html:'<div style="background:#c9764b;color:#fff;width:26px;height:26px;border-radius:50%;'+
+      'display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(0,0,0,.45);border:2px solid #fff;font-size:13px;font-weight:700;">'+(i+1)+'</div>',
+      iconSize:[26,26],iconAnchor:[13,13]});
+    L.marker([s[0],s[1]],{icon:ic}).addTo(ov)
+      .bindTooltip(s[2],{permanent:true,direction:ovdir[i],className:'ovlabel',offset:ovdir[i]==='left'?[-10,0]:[10,0]})
+      .bindPopup('<b>'+s[2]+'</b><br>'+s[4]+'<br><a href="'+s[3]+'">→ 在高德打开</a>');
   });
   L.polyline(ovpts,{color:'#2f8f83',weight:3,opacity:.85,dashArray:'7 7'}).addTo(ov);
   ov.fitBounds(L.latLngBounds(ovpts).pad(0.3));
