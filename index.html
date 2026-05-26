@@ -507,6 +507,7 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
 <script>
   var stops = [
     [27.682,100.788,"① 且慢入影松/普洛村","https://uri.amap.com/navigation?to=100.788,27.682,泸沽湖且慢入影松&mode=car&src=trip&coordinate=gaode&callnative=1"],
@@ -532,9 +533,13 @@
   var ov=L.map('map',{scrollWheelZoom:false}).setView([26.7,101.2],7);
   L.tileLayer(TILE,{maxZoom:18,attribution:ATTR}).addTo(ov);
   function arc(a,b,bow,n){var pts=[],cx=(a[0]+b[0])/2,cy=(a[1]+b[1])/2+bow;for(var i=0;i<=n;i++){var t=i/n;pts.push([(1-t)*(1-t)*a[0]+2*(1-t)*t*cx+t*t*b[0],(1-t)*(1-t)*a[1]+2*(1-t)*t*cy+t*t*b[1]]);}return pts;}
-  L.polyline([KM,LJ],{color:'#2f8f83',weight:3,opacity:.85,dashArray:'7 7'}).addTo(ov);   // D2 昆明→丽江
-  L.polyline(arc(LJ,LG,0.34,18),{color:'#2f8f83',weight:3.5,opacity:.9}).addTo(ov);        // D3 去（东弧）
-  L.polyline(arc(LG,LJ,-0.34,18),{color:'#c9764b',weight:3.5,opacity:.95,dashArray:'7 6'}).addTo(ov); // D5 回（西弧）
+  var legKL=L.polyline([KM,LJ],{color:'#2f8f83',weight:3,opacity:.85,dashArray:'7 7'}).addTo(ov);   // D2 昆明→丽江
+  var legGo=L.polyline(arc(LJ,LG,0.34,18),{color:'#2f8f83',weight:3.5,opacity:.9}).addTo(ov);        // D3 去（东弧）
+  var legBack=L.polyline(arc(LG,LJ,-0.34,18),{color:'#c9764b',weight:3.5,opacity:.95,dashArray:'7 6'}).addTo(ov); // D5 回（西弧）
+  function arrows(line,color,offsets){if(!L.polylineDecorator)return;L.polylineDecorator(line,{patterns:offsets.map(function(o){return {offset:o,repeat:0,symbol:L.Symbol.arrowHead({pixelSize:11,headAngle:55,polygon:true,pathOptions:{stroke:false,fillOpacity:1,fillColor:color}})};})}).addTo(ov);}
+  arrows(legKL,'#2f8f83',['55%']);
+  arrows(legGo,'#2f8f83',['55%']);
+  arrows(legBack,'#c9764b',['50%','85%']);
   var ovdir=['right','left','right'];
   route.forEach(function(s,i){
     var ic=L.divIcon({className:'',html:'<div style="background:#c9764b;color:#fff;width:26px;height:26px;border-radius:50%;'+
